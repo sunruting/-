@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="21.11.0.0">
+<procedure name="main">
+<interface/>
+<body>
+<l>read_image (Image, 'lAPPD3W5LwFOPeLNAdjNAiA_544_472.bmp')</l>
+<l>get_image_size (Image, Width, Height)</l>
+<c>*预处理</c>
+<l>rgb1_to_gray (Image, Image)</l>
+<l>threshold (Image, Region, 0, 100)</l>
+<l>erosion_circle (Region, RegionErosion, 4.5)//腐蚀</l>
+<l>opening_circle (RegionErosion, RegionOpening, 2)</l>
+<l>connection (RegionOpening, ConnectedRegions)</l>
+<c>*第一次分割，优先处理易分割物体</c>
+<l>select_shape (ConnectedRegions, SelectedRegions, ['area','rectangularity'], 'and', [89.96,0.7036], [4616.48,1])</l>
+<l>dilation_circle (SelectedRegions, RegionDilation, 4.5) //膨胀</l>
+<l>difference (ConnectedRegions, SelectedRegions, RegionDifference1)</l>
+<c></c>
+<l>gen_empty_obj (EmptyObject)//获取一个空白目标</l>
+<l>concat_obj (RegionDilation, EmptyObject, ObjectsConcat)//存放分割结果</l>
+<c>*第二次分割，分割相连的目标</c>
+<l>for Index:=1 to 10 by 1</l>
+<l>    shape_trans (RegionDifference1,RegionTrans, 'convex')</l>
+<l>    difference (RegionTrans,RegionDifference1,RegionDifference2)</l>
+<l>    opening_circle (RegionDifference2, RegionOpening1, 3.5)</l>
+<l>    closing_circle (RegionOpening1, RegionClosing, 30.5)</l>
+<l>    difference (RegionDifference1,RegionClosing, RegionDifference)</l>
+<l>    connection (RegionDifference, ConnectedRegions1)</l>
+<l>    select_shape (ConnectedRegions1, SelectedRegions1, 'area', 'and', 100, 1000)</l>
+<l>    gen_empty_obj (EmptyObject1)</l>
+<l>    dilation_circle (SelectedRegions1, EmptyObject1, 4.5)</l>
+<l>    concat_obj (SelectedRegions1, ObjectsConcat, ObjectsConcat)</l>
+<l>    difference (RegionDifference1,SelectedRegions1, RegionDifference3)</l>
+<l>    select_shape (RegionDifference3, SelectedRegions2, 'area', 'and', 100, 1687.5)</l>
+<l>    dilation_circle (SelectedRegions2, RegionDilation1, 4.5)</l>
+<l>    concat_obj (ObjectsConcat, RegionDilation1, ObjectsConcat)</l>
+<l>    select_shape (RegionDilation1, RegionDifference1, 'area', 'and', 247.64, 20000.01)</l>
+<l>    count_obj (SelectedRegions1, Number)</l>
+<l>    if (Number==0)</l>
+<l>        break</l>
+<l>    endif</l>
+<l>endfor</l>
+<l>select_shape (ObjectsConcat, SelectedRegions5, 'area', 'and', 150, 99999)</l>
+<l>area_center (SelectedRegions5, Area, Row, Column)</l>
+<l>gen_cross_contour_xld (Cross, Row, Column, 15, 0.785398)</l>
+<c></c>
+<l>dev_display (Image)</l>
+<l>dev_display (Cross)</l>
+<l>dev_set_draw ('margin')</l>
+<l>count_obj (Cross, Number1)</l>
+<c></c>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>
