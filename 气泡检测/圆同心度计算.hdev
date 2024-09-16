@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="21.11.0.0">
+<procedure name="main">
+<interface/>
+<body>
+<l>dev_close_window ()</l>
+<l>read_image (Image, 'F:/Halcon算法案例/产品瑕疵检测/瑕疵1/10_39545_03405e515b16ed5.jpg')</l>
+<l>rgb1_to_gray (Image, Image1)</l>
+<l>get_image_size (Image1, Width, Height)</l>
+<l>dev_open_window_fit_image (Image1, 0, 0, Width, Height, WindowHandle)</l>
+<l>dev_display (Image1)</l>
+<l> scale_image_max (Image1, Image1)</l>
+<l>edges_image (Image1, ImaAmp, ImaDir, 'canny', 1, 'nms', 20, 40)</l>
+<l>threshold (ImaDir, Regions, 0, 179)</l>
+<l>connection (Regions, ConnectedRegions)</l>
+<l>select_shape (ConnectedRegions, SelectedRegions, ['area','roundness'], 'and', [1000,0.6011], [2000.01,1])</l>
+<l>gen_contour_region_xld (SelectedRegions, Contours, 'border')</l>
+<l>union_adjacent_contours_xld (Contours, UnionContours, 10, 1, 'attr_keep')</l>
+<l>fit_circle_contour_xld (UnionContours, 'algebraic', -1, 0, 0, 3, 2, Row, Column, Radius, StartPhi, EndPhi, PointOrder)</l>
+<l>gen_circle (Circle, Row, Column, Radius)</l>
+<l>dev_display (Contours)</l>
+<c></c>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="21.11.0.0">
+<procedure name="main">
+<interface/>
+<body>
+<c>*图像大小核滤波</c>
+<c>*Blob分析</c>
+<c>*特征提取</c>
+<l>read_image (Image, '1.jpg')</l>
+<l>get_image_size (Image, Width, Height)</l>
+<l>rgb1_to_gray (Image, Image)</l>
+<c></c>
+<l>mean_image (Image, ImageMean1, 9, 9)//小核</l>
+<l>mean_image (Image, ImageMean2, 19, 19)//大核</l>
+<l>sub_image (ImageMean1, ImageMean2, ImageSub, 1, 128)</l>
+<c>*图像拉伸，图像最小灰度为0，图像最大灰度为255</c>
+<l>scale_image_max (ImageSub, ImageScaleMax)</l>
+<c>*动态阈值分割</c>
+<l>mean_image (ImageScaleMax, ImageMean3, 7, 7)</l>
+<l>dyn_threshold (ImageScaleMax, ImageMean3, RegionDynThresh, 9, 'dark')</l>
+<c>*膨胀</c>
+<l>dilation_circle (RegionDynThresh, RegionDilation, 2.5)</l>
+<l>connection (RegionDilation, ConnectedRegions)</l>
+<c>*计算区域的灰度值特征,计算区域的平均灰度</c>
+<l>gray_features (ConnectedRegions, ImageMean3, 'mean', Value)</l>
+<l>barkGaryvalue:=90</l>
+<c>*返回一个数组在另一个数组中所有出现的索引</c>
+<l>tuple_find (sgn(barkGaryvalue-Value), 1, Indices)</l>
+<l>select_obj (ConnectedRegions, ObjectSelected, Indices+1)</l>
+<c></c>
+<c>*凸行变换，使区域封闭，圆润</c>
+<l>shape_trans (ConnectedRegions, RegionTrans, 'convex')</l>
+<l>select_shape (RegionTrans, SelectedRegions, 'area', 'and', 150, 10000)</l>
+<l>select_shape (SelectedRegions, SelectedRegions1, 'circularity', 'and', 0.70, 1)</l>
+<c></c>
+<l>dev_display (Image)</l>
+<l>dev_display(SelectedRegions1)</l>
+<c></c>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>

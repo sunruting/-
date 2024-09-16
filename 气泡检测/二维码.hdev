@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="21.11.0.0">
+<procedure name="main">
+<interface/>
+<body>
+<l>dev_update_off ()</l>
+<l>dev_close_window ()</l>
+<l>read_image (Image, 'datacode/ecc200/ecc200_to_preprocess_004')</l>
+<l>dev_open_window_fit_image (Image, 0, 0, -1, -1, WindowHandle)</l>
+<l>set_display_font (WindowHandle, 16, 'mono', 'true', 'false')</l>
+<l>dev_set_line_width (3)</l>
+<l>dev_set_color ('green')</l>
+<l>dev_display (Image)</l>
+<l>Message := 'This program demonstrates the'</l>
+<l>Message[1] := 'preproccessing of a data code symbol'</l>
+<l>Message[2] := 'with gaps, modules of different color'</l>
+<l>Message[3] := 'and a distorted quiet zone.'</l>
+<l>disp_message (WindowHandle, Message, 'window', 12, 12, 'black', 'true')</l>
+<l>disp_continue_message (WindowHandle, 'black', 'true')</l>
+<l>stop ()</l>
+<c></c>
+<l>create_data_code_2d_model('Data Matrix ECC 200', 'default_parameters', 'enhanced_recognition', DataCodeHandle1)</l>
+<l>set_data_code_2d_param(DataCodeHandle1, ['module_gap_min','module_gap_max'], ['no','big'])</l>
+<l>find_data_code_2d(Image, SymbolXLDs1, DataCodeHandle1, [], [], ResultHandles1, DecodedDataStrings1)</l>
+<l>gray_opening_shape(Image, ImageOpening1, 7, 7, 'octagon')</l>
+<l>find_data_code_2d(ImageOpening1, SymbolXLDs2, DataCodeHandle1, [], [], ResultHandles2, DecodedDataStrings2)</l>
+<l>median_image(ImageOpening1, ImageMedian1, 'circle', 1, 'mirrored')</l>
+<l>find_data_code_2d(ImageMedian1, SymbolXLDs3, DataCodeHandle1, [], [], ResultHandles3, DecodedDataStrings3)</l>
+<l>disp_message (WindowHandle, 'Preprocessing:  Median filtering', 'window', 12, 12, 'black', 'true')</l>
+<l>disp_message (WindowHandle, 'Decoded string: ' + DecodedDataStrings3, 'window', 40, 12, 'black', 'true')</l>
+<l>stop ()</l>
+<l>clear_data_code_2d_model(DataCodeHandle1)</l>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>
