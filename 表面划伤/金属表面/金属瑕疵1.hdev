@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="21.11.0.0">
+<procedure name="main">
+<interface/>
+<body>
+<c>*图像处理</c>
+<c>*blob分析</c>
+<l>read_image (Image, '1.png')</l>
+<l>get_image_size (Image, Width, Height)</l>
+<l>dev_open_window (0, 0, Width, Height, 'black', WindowHandle)</l>
+<c>*设置字体的属性</c>
+<l>set_display_font (WindowHandle, 16, 'mono', 'true', 'false')</l>
+<l>dev_display (Image)</l>
+<l>rgb1_to_gray (Image, Image)</l>
+<c>*图像处理部分</c>
+<c>*增强图像对比度</c>
+<c>*强调图像的高频区域(边缘和角落),使生成的图像边缘更清晰</c>
+<c>*res := round((orig - mean) * Factor) + orig</c>
+<l>emphasize (Image, ImageEmphasize, Width, Height, 5)</l>
+<c>*g' := g1 * g2 * Mult + Add</c>
+<l>mult_image (ImageEmphasize, ImageEmphasize, ImageResult, 1, 0)</l>
+<c></c>
+<c>*Blob分析</c>
+<c>*阈值分割</c>
+<l>threshold (ImageResult, Region, 200, 255)</l>
+<c>*使用矩形结构元素扩展区域,膨胀</c>
+<l>dilation_rectangle1 (Region, RegionDilation, 2, 2)</l>
+<l>connection (RegionDilation, ConnectedRegions)</l>
+<l>select_shape (ConnectedRegions, SelectedRegions, 'area', 'and', 150, 40122.9)</l>
+<l>dilation_rectangle1 (SelectedRegions, RegionDilation1, 2, 2)</l>
+<l>fill_up (RegionDilation1, RegionFillUp)</l>
+<c>*返回一个原图像大小的区域,灰度值为255</c>
+<l>get_domain (Image, Domain)</l>
+<c>*图像减操作</c>
+<l>difference (Domain, RegionFillUp, RegionDifference)</l>
+<l>connection (RegionDifference, ConnectedRegions1)</l>
+<c>*根据参数Type变换输入区域的形状,rectangle2最小外接矩形，</c>
+<c>*填充为变换区域的形状</c>
+<l>shape_trans (ConnectedRegions1, RegionTrans, 'rectangle2')</l>
+<l>difference (Domain, RegionTrans, RegionDifference1)</l>
+<l>connection (RegionDifference1, ConnectedRegions2)</l>
+<c>*区域相对于其相对位置进行排序</c>
+<l>sort_region (ConnectedRegions2, SortedRegions, 'first_point', 'true', 'column')</l>
+<c>*判断区域个数</c>
+<l>count_obj (SortedRegions, Number)</l>
+<l>if(Number!=4)</l>
+<l>    throw (['Number is not 4'])</l>
+<l>endif</l>
+<l>select_obj (SortedRegions, ObjectSelected2, 2)</l>
+<l>select_obj (SortedRegions, ObjectSelected3, 3)</l>
+<l>union2 (ObjectSelected2, ObjectSelected3, RegionUnion)</l>
+<c>*图像取交集，图像与区域的交集</c>
+<l>reduce_domain (ImageResult, RegionUnion, ImageReduced)</l>
+<l>threshold (ImageReduced, Region1, 0, 20)</l>
+<c>*开运算，矩形</c>
+<l>opening_rectangle1 (Region1, RegionOpening, 3, 3)</l>
+<l>connection (RegionOpening, ConnectedRegions3)</l>
+<c>*创建一个空区域</c>
+<l>gen_empty_region (EmptyRegion)</l>
+<c>*填充区域之间的间隙（取决于灰度值或颜色）或拆分重叠区域</c>
+<l>expand_gray (ConnectedRegions3, ImageResult, EmptyRegion, RegionExpand, \
+             'maximal', 'image', 16)</l>
+<c>*获取两个区域的交集</c>
+<l>intersection (RegionUnion, RegionExpand, RegionIntersection)</l>
+<l>closing_circle (RegionIntersection, RegionClosing, 3.5)</l>
+<l>connection (RegionClosing, ConnectedRegions4)</l>
+<l>select_shape (ConnectedRegions4, SelectedRegions1, 'area', 'and', 344.99, 5000)</l>
+<c></c>
+<c>*图像显示</c>
+<l>dev_display (Image)</l>
+<l>dev_display (SelectedRegions1)</l>
+<l>stop()</l>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>

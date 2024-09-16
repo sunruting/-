@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="21.11.0.0">
+<procedure name="main">
+<interface/>
+<body>
+<c>*通过频域滤波检测非均匀照明表面的缺陷(划痕)。</c>
+<c>*首先，创建一个合适的带通滤波器。</c>
+<c>*然后对输入图像进行傅里叶变换，在频域中进行滤波，增强高频信息。</c>
+<c>*最后将其转化为空间域，对增强后的缺陷进行形态学后处理。</c>
+<c></c>
+<l>read_image (Image, '金属划伤.png')</l>
+<l>get_image_size (Image, Width, Height)</l>
+<l>rgb1_to_gray (Image, Image)</l>
+<c>* Invert an image   翻转图像，黑白交换  g' = 255 - g</c>
+<l>invert_image (Image, ImageInvert1)</l>
+<c>*图像乘法，增强对比    g' := g1 * g2 * Mult + Add</c>
+<l>mult_image (ImageInvert1, ImageInvert1, ImageResult, 0.01, 0)</l>
+<c></c>
+<c>*bandpass_image — 使用带通滤波器的边缘提取</c>
+<c>*产生一个正弦状的带通滤波器  rft傅里叶变换,卷积核</c>
+<l>gen_sin_bandpass (ImageFilter, 0.6, 'none', 'rft', Width, Height)</l>
+<c>*标准带通滤波器</c>
+<l>gen_bandpass (ImageBandpass, 0.05, 0.7, 'none', 'rft', Width, Height)</l>
+<c>*时域转频域</c>
+<l>rft_generic (ImageResult, ImageFFT, 'to_freq', 'none', 'complex', Width)</l>
+<c>*卷积</c>
+<l>convol_fft (ImageFFT, ImageBandpass, ImageConvol)</l>
+<c>*频域转时域</c>
+<l>rft_generic (ImageConvol, ImageFFT1, 'from_freq', 'n', 'byte', Width)</l>
+<c></c>
+<c>*texture_laws</c>
+<c>*利用不同的kernel与图像进行卷积运算，提取出图像的高频部分或低频部分</c>
+<c>*利用纹理处理器对图像进行滤波处理，以增强或抑制特定的纹理</c>
+<l>texture_laws (ImageFFT1, ImageTexture, 'el', 3, 5)</l>
+<c></c>
+<c>*均值滤波,作为动态阈值分割的背景</c>
+<l>mean_image (ImageTexture, ImageMean, 2, 5)</l>
+<c>*动态阈值分割</c>
+<l>dyn_threshold (ImageTexture, ImageMean, RegionDynThresh, 10, 'light')</l>
+<l>connection (RegionDynThresh, ConnectedRegions)</l>
+<l>select_shape (ConnectedRegions, SelectedRegions, 'area', 'and', 44.85, 500)</l>
+<c>*将Region元组内的全部区域合并成一个独立的区域，保存于RegionUnion</c>
+<l>union1 (SelectedRegions, RegionUnion)</l>
+<c>*闭运算</c>
+<l>closing_circle (RegionUnion, RegionClosing, 3.5)</l>
+<c>*骨骼化</c>
+<l>skeleton (RegionClosing, Skeleton)</l>
+<c>*显示</c>
+<l>dev_display (Image)</l>
+<l>dev_set_color ('red')</l>
+<l>dev_display (Skeleton)</l>
+<l>stop ()</l>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>
