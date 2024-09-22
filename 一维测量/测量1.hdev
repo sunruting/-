@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="21.11.0.0">
+<procedure name="main">
+<interface/>
+<body>
+<l>dev_close_window ()</l>
+<l>read_image (Image, '测距1.png')</l>
+<l>get_image_size (Image, Width, Height)</l>
+<l>rgb1_to_gray (Image, Image)</l>
+<l>dev_open_window (0, 0, Width, Height, 'black', WindowHandle)</l>
+<l>dev_display (Image)</l>
+<c></c>
+<c>****方法一****</c>
+<c>*灰度闭操作</c>
+<l>gray_closing_shape (Image, ImageOpening, 60, 60, 'octagon')</l>
+<l>threshold (ImageOpening, Regions, 46, 231)</l>
+<l>edges_sub_pix (ImageOpening, Edges, 'canny', 1, 20, 100)</l>
+<c>*筛选轮廓</c>
+<l>count_obj (Edges, Number)</l>
+<l>select_obj (Edges, ObjectSelected1, 1)</l>
+<c>*轮廓1拟合直线</c>
+<l>fit_line_contour_xld (ObjectSelected1, 'tukey', -1, 0, 5, 2, RowBegin, ColBegin, RowEnd, ColEnd, Nr, Nc, Dist)</l>
+<l>gen_contour_polygon_xld (Line1, [RowBegin,RowEnd], [ColBegin,ColEnd])</l>
+<l>dev_set_color ('yellow')</l>
+<l>dev_display (Line1)</l>
+<l>distance_pp (RowBegin, ColBegin, RowEnd, ColEnd, Length1)</l>
+<l>stop ()</l>
+<l>select_obj (Edges, ObjectSelected2, 2)</l>
+<c>*轮廓2拟合直线</c>
+<l>fit_line_contour_xld (ObjectSelected2, 'tukey', -1, 0, 5, 2, RowBegin1, ColBegin1, RowEnd1, ColEnd1, Nr1, Nc1, Dist1)</l>
+<l>gen_contour_polygon_xld (Line2, [RowBegin1,RowEnd1], [ColBegin1,ColEnd1])</l>
+<l>dev_set_color ('red')</l>
+<l>dev_display (Line2)</l>
+<l>distance_pp (RowBegin1, ColBegin1, RowEnd1, ColEnd1, Length2)</l>
+<l>stop ()</l>
+<c>* 计算第一条线的两个端点到第二条线的距离</c>
+<l>distance_pl(RowBegin1, ColBegin1, RowBegin, ColBegin, RowEnd, ColEnd, DistStart1ToLine2)</l>
+<l>distance_pl(RowEnd1, ColEnd1, RowBegin, ColBegin, RowEnd, ColEnd, DistEnd1ToLine2)</l>
+<c></c>
+<c>* 计算第二条线的两个端点到第一条线的距离</c>
+<l>distance_pl(RowBegin, ColBegin, RowBegin1, ColBegin1, RowEnd1, ColEnd1, DistStart2ToLine1)</l>
+<l>distance_pl(RowEnd, ColEnd, RowBegin1, ColBegin1, RowEnd1, ColEnd1, DistEnd2ToLine1)</l>
+<c></c>
+<c>* 最短距离</c>
+<l>ShortestDistance := min([DistStart1ToLine2, DistEnd1ToLine2, DistStart2ToLine1, DistEnd2ToLine1])</l>
+<c></c>
+<c></c>
+<l>connection (Regions, Connection)</l>
+<l>shape_trans(Connection, RegionTrans, 'convex')</l>
+<l>difference (RegionTrans, Connection, RegionDifference)</l>
+<c></c>
+<c></c>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>

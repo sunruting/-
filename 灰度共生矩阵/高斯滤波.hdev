@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="21.11.0.0">
+<procedure name="main">
+<interface/>
+<body>
+<c>****高斯滤波+灰度共生矩阵*****</c>
+<l>dev_close_window ()</l>
+<c>*关闭程序计数器，图形变量更新，窗口图形更新</c>
+<l>dev_update_off ()</l>
+<c>*设置图形的路径</c>
+<l>Path:='金属划伤.png'</l>
+<l>read_image (Image, Path)</l>
+<l>get_image_size (Image, Width, Height)</l>
+<l>dev_open_window (0, 0, Width, Height, 'black', WindowHandle)</l>
+<c>*设置字体大小16，字体为mono，粗体，斜体</c>
+<l>set_display_font (WindowHandle, 16, 'mono', 'true', 'false')</l>
+<c>*设置区域填充方式</c>
+<l>dev_set_draw ('margin')</l>
+<c>*设置线宽</c>
+<l>dev_set_line_width (3)</l>
+<c>*设置输出对象的颜色</c>
+<l>dev_set_color ('red')</l>
+<c></c>
+<c>****图像处理开始****</c>
+<l>decompose3 (Image, R, G, B)</l>
+<c></c>
+<c>*1.提取背景图像，增强图像对比度</c>
+<c>*将图像转化为频域图像</c>
+<l>rft_generic (R, ImageFFT, 'to_freq', 'none', 'complex', Width)</l>
+<c>*生成一个高斯滤波核</c>
+<l>gen_gauss_filter (ImageGauss, 100, 100, 0, 'n', 'rft', Width, Height)</l>
+<c>*在频域用高斯滤波核对图像进行卷积</c>
+<l>convol_fft (ImageFFT, ImageGauss, ImageConvol)</l>
+<c>*将卷积后的图像从频域转换为空域</c>
+<l>rft_generic (ImageConvol, ImageFFT1, 'from_freq', 'none', 'byte', Width)</l>
+<c>*原图减去滤波后的背景图像</c>
+<l>sub_image (R, ImageFFT1, ImageSub, 2, 125)</l>
+<c></c>
+<c>*2.灰度共生矩阵计算</c>
+<c>*选择合适的滤波，减少背景的干扰</c>
+<l>median_image (ImageSub, ImageMedian, 'circle', 2, 'mirrored')</l>
+<c>*选择合适的方式将可能是缺陷的区域提取出来</c>
+<l>*watersheds_threshold (ImageMedian, Basins, 10)//提取分水岭盆地</l>
+<l>threshold (ImageMedian, Regions, 35, 101)</l>
+<l>connection (Regions, Connection)</l>
+<c></c>
+<c></c>
+<c></c>
+<c>*计算灰度共生矩阵的灰度特性，主要能量特性</c>
+<l>cooc_feature_image (Connection, ImageSub, 6, 0, Energy, Correlation, Homogeneity, Contrast)</l>
+<c></c>
+<c>*3.筛选合适的区域</c>
+<c>*Energy小于0.05（阈值），mask为1，否则为0</c>
+<l>Mask:=Energy[&lt;=]0.005</l>
+<l>select_mask_obj (Connection, SelectedObjects, Mask)</l>
+<c></c>
+<c>*显示图像</c>
+<l>dev_display (Image)</l>
+<l>dev_display (SelectedObjects)</l>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>
