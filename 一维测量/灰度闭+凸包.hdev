@@ -24,7 +24,7 @@
 <l>dev_set_color ('yellow')</l>
 <l>dev_display (Line1)</l>
 <l>distance_pp (RowBegin, ColBegin, RowEnd, ColEnd, Length1)</l>
-<l>stop ()</l>
+<c></c>
 <l>select_obj (Edges, ObjectSelected2, 2)</l>
 <c>*轮廓2拟合直线</c>
 <l>fit_line_contour_xld (ObjectSelected2, 'tukey', -1, 0, 5, 2, RowBegin1, ColBegin1, RowEnd1, ColEnd1, Nr1, Nc1, Dist1)</l>
@@ -32,7 +32,7 @@
 <l>dev_set_color ('red')</l>
 <l>dev_display (Line2)</l>
 <l>distance_pp (RowBegin1, ColBegin1, RowEnd1, ColEnd1, Length2)</l>
-<l>stop ()</l>
+<c></c>
 <c>* 计算第一条线的两个端点到第二条线的距离</c>
 <l>distance_pl(RowBegin1, ColBegin1, RowBegin, ColBegin, RowEnd, ColEnd, DistStart1ToLine2)</l>
 <l>distance_pl(RowEnd1, ColEnd1, RowBegin, ColBegin, RowEnd, ColEnd, DistEnd1ToLine2)</l>
@@ -43,8 +43,8 @@
 <c></c>
 <c>* 最短距离</c>
 <l>ShortestDistance := min([DistStart1ToLine2, DistEnd1ToLine2, DistStart2ToLine1, DistEnd2ToLine1])</l>
-<c></c>
-<c></c>
+<l>stop()</l>
+<c>  </c>
 <l>connection (Regions, Connection)</l>
 <l>shape_trans(Connection, RegionTrans, 'convex')</l>
 <l>difference (RegionTrans, Connection, RegionDifference)</l>

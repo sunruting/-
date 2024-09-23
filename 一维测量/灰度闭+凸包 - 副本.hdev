@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="21.11.0.0">
+<procedure name="main">
+<interface/>
+<body>
+<l>dev_close_window ()</l>
+<l>read_image (Image, '测距1.png')</l>
+<l>get_image_size (Image, Width, Height)</l>
+<l>rgb1_to_gray (Image, Image)</l>
+<l>dev_open_window (0, 0, Width, Height, 'black', WindowHandle)</l>
+<l>dev_display (Image)</l>
+<c></c>
+<c as_id="matching" as_name="Matching 01" as_grp="[1,1,2]" as_ord="1">****获取模板图像****</c>
+<l as_id="matching" as_name="Matching 01" as_grp="[1,1,2]" as_ord="3">gen_rectangle2 (ModelRegion, 199, 146, rad(-87.8789), 162.111, 9.99315)</l>
+<l as_id="matching" as_name="Matching 01" as_grp="[1,1,3]" as_ord="3">reduce_domain (Image, ModelRegion, TemplateImage)</l>
+<l as_id="matching" as_name="Matching 01" as_grp="[1,1,4]" as_ord="3">create_shape_model (TemplateImage, 1, rad(-5), rad(23), rad(0.3575), ['none','no_pregeneration'], 'use_polarity', [6,9,8], 3, ModelID)</l>
+<l as_id="matching" as_name="Matching 01" as_grp="[1,2]" as_ord="3">get_shape_model_contours (ModelContours, ModelID, 1)</l>
+<l as_id="matching" as_name="Matching 01" as_grp="[1,5]" as_ord="3">area_center (ModelRegion, ModelRegionArea, RefRow, RefColumn)</l>
+<l as_id="matching" as_name="Matching 01" as_grp="[1,5]" as_ord="4">vector_angle_to_rigid (0, 0, 0, RefRow, RefColumn, 0, HomMat2D)</l>
+<l as_id="matching" as_name="Matching 01" as_grp="[1,5]" as_ord="5">affine_trans_contour_xld (ModelContours, TransContours, HomMat2D)</l>
+<c></c>
+<c as_id="matching" as_name="Matching 01" as_grp="[1,5]" as_ord="6">*获取左边的图像并匹配模型</c>
+<l>gen_rectangle1 (Rectangle1, 0, 0, Height, Width/2)</l>
+<l>reduce_domain (Image, Rectangle1, Imageleft)</l>
+<l>find_shape_model (Imageleft, ModelID, rad(-5), rad(23), 0.9, 8, 0.5, 'least_squares', [1,1], 1, Row, Column, Angle, Score)</l>
+<l>dev_display (Imageleft)</l>
+<l>for I := 0 to |Score| - 1 by 1</l>
+<l>    hom_mat2d_identity (HomMat2D)</l>
+<l>    hom_mat2d_rotate (HomMat2D, Angle[I], 0, 0, HomMat2D)</l>
+<l>    hom_mat2d_translate (HomMat2D, Row[I], Column[I], HomMat2D)</l>
+<l>    affine_trans_contour_xld (ModelContours, TransContours, HomMat2D)</l>
+<l>    dev_set_color ('green')</l>
+<l>    dev_display (TransContours)</l>
+<l>    stop ()</l>
+<l>endfor</l>
+<l>MaxValue := 1</l>
+<c>*获取左边最外侧圆的范围</c>
+<l>tuple_max(Column, MaxValue)</l>
+<l>tuple_find(Column, MaxValue, Indices)</l>
+<l>gen_rectangle2 (ModelRegionleft, Row[Indices], Column[Indices], rad(-87.8789), 162.111, 9.99315)</l>
+<l>reduce_domain (Image, ModelRegionleft, TemplateImageleft)</l>
+<l>edges_sub_pix(TemplateImageleft, Edges, 'canny', 1, 20, 40)</l>
+<l>fit_circle_contour_xld (Edges, 'algebraic', -1, 0, 0, 3, 2, Row2, Column2, Radius, StartPhi, EndPhi, PointOrder)</l>
+<l>gen_circle_contour_xld (ContCircle, Row2, Column2, Radius, 0, 6.28318, 'positive', 1)</l>
+<l>dev_set_color('red')</l>
+<l>dev_display(ContCircle)</l>
+<c>*获取右边的图像并匹配模型</c>
+<l>gen_rectangle1 (Rectangle2, 0, Width/2, Height, Width)</l>
+<l>reduce_domain (Image, Rectangle2, Imageright)</l>
+<l>find_shape_model (Imageright, ModelID, rad(-5), rad(23), 0.9, 7, 0.5, 'least_squares', [1,1], 1, Row1, Column1, Angle1, Score1)</l>
+<l>dev_display (Imageright)</l>
+<l>for I := 0 to |Score1| - 1 by 1</l>
+<l>    hom_mat2d_identity (HomMat2D1)</l>
+<l>    hom_mat2d_rotate (HomMat2D1, Angle1[I], 0, 0, HomMat2D1)</l>
+<l>    hom_mat2d_translate (HomMat2D1, Row1[I], Column1[I], HomMat2D1)</l>
+<l>    affine_trans_contour_xld (ModelContours, TransContours1, HomMat2D1)</l>
+<l>    dev_set_color ('green')</l>
+<l>    dev_display (TransContours1)</l>
+<l>    stop ()</l>
+<l>endfor</l>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c>****方法一****</c>
+<c></c>
+<c></c>
+<c>* 计算第一条线的两个端点到第二条线的距离</c>
+<l>*distance_pl(RowBegin1, ColBegin1, RowBegin, ColBegin, RowEnd, ColEnd, DistStart1ToLine2)</l>
+<l>*distance_pl(RowEnd1, ColEnd1, RowBegin, ColBegin, RowEnd, ColEnd, DistEnd1ToLine2)</l>
+<c></c>
+<c>* 计算第二条线的两个端点到第一条线的距离</c>
+<l>*distance_pl(RowBegin, ColBegin, RowBegin1, ColBegin1, RowEnd1, ColEnd1, DistStart2ToLine1)</l>
+<l>*distance_pl(RowEnd, ColEnd, RowBegin1, ColBegin1, RowEnd1, ColEnd1, DistEnd2ToLine1)</l>
+<c></c>
+<c>* 最短距离</c>
+<l>*ShortestDistance := min([DistStart1ToLine2, DistEnd1ToLine2, DistStart2ToLine1, DistEnd2ToLine1])</l>
+<l>stop()</l>
+<c>  </c>
+<l>*connection (Regions, Connection)</l>
+<l>*shape_trans(Connection, RegionTrans, 'convex')</l>
+<l>*difference (RegionTrans, Connection, RegionDifference)</l>
+<c></c>
+<c></c>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>
